@@ -1,0 +1,14 @@
+2026-02-27 19:17:11.296 WAT [26614] LOG:  starting PostgreSQL 18.2 on aarch64-unknown-linux-android, compiled by Android (13989888, +pgo, +bolt, +lto, +mlgo, based on r563880c) clang version 21.0.0 (https://android.googlesource.com/toolchain/llvm-project 5e96669f06077099aa41290cdb4c5e6fa0f59349), 64-bit
+2026-02-27 19:17:11.297 WAT [26614] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2026-02-27 19:17:11.300 WAT [26614] LOG:  listening on Unix socket "/data/data/com.termux/files/usr/tmp/.s.PGSQL.5432"
+2026-02-27 19:17:11.312 WAT [26622] LOG:  database system was shut down at 2026-02-27 19:16:44 WAT
+2026-02-27 19:17:11.324 WAT [26614] LOG:  database system is ready to accept connections
+2026-02-27 19:17:48.218 WAT [26903] FATAL:  database "u0_a408" does not exist
+2026-02-27 19:22:20.190 WAT [26620] LOG:  checkpoint starting: time
+2026-02-27 19:24:39.793 WAT [26620] LOG:  checkpoint complete: wrote 992 buffers (6.1%), wrote 3 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=139.438 s, sync=0.133 s, total=139.604 s; sync files=312, longest=0.020 s, average=0.001 s; distance=4717 kB, estimate=4717 kB; lsn=0/1BFF3A0, redo lsn=0/1BFF310
+2026-02-27 21:30:00.880 WAT [26620] LOG:  checkpoint starting: time
+2026-02-27 21:30:12.528 WAT [26620] LOG:  checkpoint complete: wrote 50 buffers (0.3%), wrote 1 SLRU buffers; 1 WAL file(s) added, 0 removed, 0 recycled; write=11.246 s, sync=0.133 s, total=11.650 s; sync files=43, longest=0.008 s, average=0.004 s; distance=204 kB, estimate=4266 kB; lsn=0/1C324B8, redo lsn=0/1C32428
+2026-02-27 21:35:00.629 WAT [26620] LOG:  checkpoint starting: time
+2026-02-27 21:35:06.906 WAT [26620] LOG:  checkpoint complete: wrote 60 buffers (0.4%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=6.167 s, sync=0.051 s, total=6.277 s; sync files=47, longest=0.003 s, average=0.002 s; distance=296 kB, estimate=3869 kB; lsn=0/1C7C4E0, redo lsn=0/1C7C488
+2026-02-27 21:50:01.065 WAT [26620] LOG:  checkpoint starting: time
+2026-02-27 21:50:01.954 WAT [26620] LOG:  checkpoint complete: wrote 8 buffers (0.0%), wrote 1 SLRU buffers; 0 WAL file(s) added, 0 removed, 0 recycled; write=0.829 s, sync=0.026 s, total=0.890 s; sync files=7, longest=0.019 s, average=0.004 s; distance=2 kB, estimate=3482 kB; lsn=0/1C7D068, redo lsn=0/1C7D010

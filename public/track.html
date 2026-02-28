@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track Shipment</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>📦 Track Your Shipment</h2>
+
+  <input type="text" id="tracking" placeholder="Enter Tracking Number">
+  <button onclick="track()">Track</button>
+
+  <div id="result"></div>
+</div>
+
+<script>
+function track() {
+  const number = document.getElementById("tracking").value.trim();
+  const result = document.getElementById("result");
+
+  if (!number) {
+    alert("Enter tracking number");
+    return;
+  }
+
+  fetch(`/api/shipments/track/${number}`)
+    .then(res => res.json())
+    .then(data => {
+
+      if (!data.success) {
+        result.innerHTML = "<p>Shipment not found.</p>";
+        return;
+      }
+
+      result.innerHTML = `
+        <h3>Status: ${data.shipment.current_status}</h3>
+        <p><b>From:</b> ${data.shipment.origin_country}</p>
+        <p><b>To:</b> ${data.shipment.destination_country}</p>
+        <p><b>Sender:</b> ${data.shipment.sender_name}</p>
+        <p><b>Receiver:</b> ${data.shipment.receiver_name}</p>
+      `;
+    })
+    .catch(() => {
+      result.innerHTML = "<p>Error connecting to server.</p>";
+    });
+}
+</script>
+
+</body>
+</html>

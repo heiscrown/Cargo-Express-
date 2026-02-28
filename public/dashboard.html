@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+  <h2>📦 Shipment Dashboard</h2>
+
+  <button onclick="logout()">Logout</button>
+
+  <hr>
+
+  <h3>Create Shipment</h3>
+
+  <input type="text" id="sender" placeholder="Sender Name">
+  <input type="text" id="receiver" placeholder="Receiver Name">
+  <input type="text" id="origin" placeholder="Origin Country">
+  <input type="text" id="destination" placeholder="Destination Country">
+
+  <button onclick="createShipment()">Create</button>
+
+  <hr>
+
+  <h3>All Shipments</h3>
+  <div id="shipments"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
