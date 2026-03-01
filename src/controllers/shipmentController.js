@@ -2,22 +2,17 @@ const { Pool } = require("pg");
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: false }
+    : false
 });
 
 /* =========================================
-   PUBLIC: TRACK SHIPMENT
+   PUBLIC TRACKING
 ========================================= */
 exports.trackShipment = async (req, res) => {
   try {
     const { trackingNumber } = req.params;
-
-    if (!trackingNumber) {
-      return res.status(400).json({
-        success: false,
-        message: "Tracking number is required"
-      });
-    }
 
     const result = await pool.query(
       "SELECT * FROM shipments WHERE tracking_number = $1",
@@ -31,23 +26,22 @@ exports.trackShipment = async (req, res) => {
       });
     }
 
-    return res.json({
+    res.json({
       success: true,
       shipment: result.rows[0]
     });
 
-  } catch (error) {
-    console.error("Track Shipment Error:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
 };
 
-
 /* =========================================
-   ADMIN: CREATE SHIPMENT
+   CREATE SHIPMENT
 ========================================= */
 exports.createShipment = async (req, res) => {
   try {
@@ -56,49 +50,39 @@ exports.createShipment = async (req, res) => {
       sender_name,
       receiver_name,
       origin_country,
-      destination_country,
-      current_status
+      destination_country
     } = req.body;
 
-    if (!tracking_number || !sender_name || !receiver_name) {
-      return res.status(400).json({
-        success: false,
-        message: "Required fields missing"
-      });
-    }
-
     const result = await pool.query(
-      `INSERT INTO shipments 
-      (tracking_number, sender_name, receiver_name, origin_country, destination_country, current_status)
-      VALUES ($1,$2,$3,$4,$5,$6)
+      `INSERT INTO shipments
+      (tracking_number, sender_name, receiver_name, origin_country, destination_country)
+      VALUES ($1,$2,$3,$4,$5)
       RETURNING *`,
       [
         tracking_number,
         sender_name,
         receiver_name,
         origin_country,
-        destination_country,
-        current_status || "Pending"
+        destination_country
       ]
     );
 
-    return res.status(201).json({
+    res.status(201).json({
       success: true,
       shipment: result.rows[0]
     });
 
-  } catch (error) {
-    console.error("Create Shipment Error:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
 };
 
-
 /* =========================================
-   ADMIN: GET ALL SHIPMENTS
+   GET ALL SHIPMENTS
 ========================================= */
 exports.getAllShipments = async (req, res) => {
   try {
@@ -106,50 +90,36 @@ exports.getAllShipments = async (req, res) => {
       "SELECT * FROM shipments ORDER BY created_at DESC"
     );
 
-    return res.json({
+    res.json({
       success: true,
       count: result.rows.length,
       shipments: result.rows
     });
 
-  } catch (error) {
-    console.error("Get Shipments Error:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
 };
 
-
 /* =========================================
-   ADMIN: UPDATE SHIPMENT DETAILS
+   UPDATE SHIPMENT
 ========================================= */
 exports.updateShipment = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      sender_name,
-      receiver_name,
-      origin_country,
-      destination_country
-    } = req.body;
+    const { sender_name, receiver_name } = req.body;
 
     const result = await pool.query(
       `UPDATE shipments
        SET sender_name=$1,
-           receiver_name=$2,
-           origin_country=$3,
-           destination_country=$4
-       WHERE id=$5
+           receiver_name=$2
+       WHERE id=$3
        RETURNING *`,
-      [
-        sender_name,
-        receiver_name,
-        origin_country,
-        destination_country,
-        id
-      ]
+      [sender_name, receiver_name, id]
     );
 
     if (result.rows.length === 0) {
@@ -159,22 +129,53 @@ exports.updateShipment = async (req, res) => {
       });
     }
 
-    return res.json({
+    res.json({
       success: true,
       shipment: result.rows[0]
     });
 
-  } catch (error) {
-    console.error("Update Shipment Error:", error);
-    return res.status(500).json({
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
 };
 
-
 /* =========================================
-   ADMIN: UPDATE SHIPMENT STATUS
+   UPDATE STATUS
 ========================================= */
-exports.updateStatus =
+exports.updateStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { current_status } = req.body;
+
+    const result = await pool.query(
+      `UPDATE shipments
+       SET current_status=$1
+       WHERE id=$2
+       RETURNING *`,
+      [current_status, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Shipment not found"
+      });
+    }
+
+    res.json({
+      success: true,
+      shipment: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};
