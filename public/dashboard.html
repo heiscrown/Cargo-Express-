@@ -1,33 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard | Cargo Express</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      display: flex;
+      background: #f4f6f9;
+      height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 250px;
+      background: #111827;
+      color: white;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar h2 {
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      color: #cbd5e1;
+      text-decoration: none;
+      margin: 15px 0;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .sidebar a:hover {
+      color: white;
+    }
+
+    /* Main Content */
+    .main {
+      flex: 1;
+      padding: 30px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    input, select, button {
+      padding: 10px;
+      margin: 8px 0;
+      width: 100%;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>📦 Shipment Dashboard</h2>
-
-  <button onclick="logout()">Logout</button>
-
-  <hr>
-
-  <h3>Create Shipment</h3>
-
-  <input type="text" id="sender" placeholder="Sender Name">
-  <input type="text" id="receiver" placeholder="Receiver Name">
-  <input type="text" id="origin" placeholder="Origin Country">
-  <input type="text" id="destination" placeholder="Destination Country">
-
-  <button onclick="createShipment()">Create</button>
-
-  <hr>
-
-  <h3>All Shipments</h3>
-  <div id="shipments"></div>
+<div class="sidebar">
+  <h2>Cargo Admin</h2>
+  <a onclick="showSection('overview')">Overview</a>
+  <a onclick="showSection('create')">Create Shipment</a>
+  <a onclick="showSection('update')">Update Status</a>
+  <a onclick="logout()">Logout</a>
 </div>
 
-<script src="app.js"></script>
+<div class="main">
+
+  <!-- Overview -->
+  <div id="overview" class="section">
+    <div class="card">
+      <h3>Welcome to the Enterprise Dashboard</h3>
+      <p>Manage shipments, update status, and monitor operations.</p>
+    </div>
+  </div>
+
+  <!-- Create Shipment -->
+  <div id="create" class="section hidden">
+    <div class="card">
+      <h3>Create Shipment</h3>
+      <input type="text" id="tracking" placeholder="Tracking Number">
+      <input type="text" id="sender" placeholder="Sender Name">
+      <input type="text" id="receiver" placeholder="Receiver Name">
+      <input type="text" id="origin" placeholder="Origin Country">
+      <input type="text" id="destination" placeholder="Destination Country">
+      <button onclick="createShipment()">Create</button>
+    </div>
+  </div>
+
+  <!-- Update Status -->
+  <div id="update" class="section hidden">
+    <div class="card">
+      <h3>Update Shipment Status</h3>
+      <input type="text" id="shipmentId" placeholder="Shipment ID">
+      <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="In Transit">In Transit</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+      <input type="text" id="location" placeholder="Location (optional)">
+      <button onclick="updateStatus()">Update</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // 🔐 Token Protection
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "/login.html";
+  }
+
+  function showSection(id) {
+    document.querySelectorAll('.section').forEach(sec => sec.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  async function createShipment() {
+    const res = await fetch("/api/shipments", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        tracking_number: tracking.value,
+        sender_name: sender.value,
+        receiver_name: receiver.value,
+        origin_country: origin.value,
+        destination_country: destination.value
+      })
+    });
+    alert("Shipment Created");
+  }
+
+  async function updateStatus() {
+    const res = await fetch("/api/shipments/" + shipmentId.value + "/status", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+      },
+      body: JSON.stringify({
+        status: status.value,
+        location: location.value
+      })
+    });
+    alert("Status Updated");
+  }
+
+  function logout() {
+    localStorage.removeItem("token");
+    window.location.href = "/login.html";
+  }
+</script>
+
 </body>
 </html>
