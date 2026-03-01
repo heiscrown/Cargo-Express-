@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Admin Portal | Cargo Express</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+* {
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  display:flex;
+  height:100vh;
+  background:#f4f6f9;
+}
+
+/* Sidebar */
+.sidebar {
+  width:260px;
+  background:#111827;
+  color:white;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+}
+
+.sidebar h2 {
+  margin-bottom:30px;
+}
+
+.sidebar a {
+  color:#cbd5e1;
+  text-decoration:none;
+  margin:12px 0;
+  cursor:pointer;
+}
+
+.sidebar a:hover {
+  color:white;
+}
+
+/* Main Content */
+.main {
+  flex:1;
+  padding:30px;
+  overflow-y:auto;
+}
+
+.card {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.05);
+  margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+  <h2>Admin Portal</h2>
+  <a onclick="loadSection('dashboard')">Dashboard</a>
+  <a onclick="loadSection('shipments')">Shipments</a>
+  <a onclick="loadSection('users')">Users</a>
+  <a onclick="loadSection('reports')">Reports</a>
+  <a onclick="logout()">Logout</a>
+</div>
+
+<div class="main" id="content">
+  <div class="card">
+    <h3>Welcome to Cargo Express Admin</h3>
+    <p>Select a menu item to begin.</p>
+  </div>
+</div>
+
+<script>
+// 🔐 Protect Admin Portal
+const token = localStorage.getItem("token");
+if(!token){
+  window.location.href="/login.html";
+}
+
+// Load Section (Future Expansion)
+function loadSection(section){
+  document.getElementById("content").innerHTML =
+    "<div class='card'><h3>"+section.toUpperCase()+"</h3><p>Module under development.</p></div>";
+}
+
+function logout(){
+  localStorage.removeItem("token");
+  window.location.href="/login.html";
+}
+</script>
+
+</body>
+</html>
