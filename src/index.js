@@ -1,56 +1,71 @@
-require("dotenv").config();
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
-/* ==============================
-   MIDDLEWARE
-================================= */
-app.use(cors());
+/* ================================
+   SECURITY & MIDDLEWARE
+================================ */
+
+app.use(cors({
+  origin: "*", // You can restrict later to your frontend URL
+}));
+
 app.use(express.json());
 
-/* ==============================
-   HEALTH CHECK (IMPORTANT)
-================================= */
+/* ================================
+   HEALTH CHECK
+================================ */
+
 app.get("/health", (req, res) => {
-  res.json({
+  res.status(200).json({
     success: true,
     message: "Cargo Express API is running",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
-/* ==============================
-   BASIC ROOT ROUTE
-================================= */
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Welcome to Cargo Express API"
+/* ================================
+   AUTH ROUTE PLACEHOLDER
+   (Your real auth logic should exist in routes file)
+================================ */
+
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body;
+
+  // TEMP SIMPLE CHECK (replace with database logic)
+  if (email === "admin@example.com" && password === "admin123") {
+    return res.json({
+      token: "demo-jwt-token",
+      user: { role: "admin" },
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: "Invalid email or password",
   });
 });
 
-/* ==============================
-   ROUTES
-================================= */
-const shipmentRoutes = require("./routes/shipmentRoutes");
-app.use("/api/shipments", shipmentRoutes);
-
-/* ==============================
+/* ================================
    GLOBAL ERROR HANDLER
-================================= */
+================================ */
+
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err);
+  console.error(err);
   res.status(500).json({
     success: false,
-    message: "Internal Server Error"
+    message: "Internal Server Error",
   });
 });
 
-/* ==============================
+/* ================================
    START SERVER
-================================= */
+================================ */
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
