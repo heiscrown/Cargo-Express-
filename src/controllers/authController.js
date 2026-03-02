@@ -1,49 +1,53 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const db = require("../config/db");
+const db = require("../config/database");
 
 /* =====================================================
    REGISTER USER (ADMIN OR STAFF)
 ===================================================== */
 exports.register = async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const { email, password, role = "user" } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username and password are required",
+        message: "Email and password are required",
       });
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await db.query(
-      "SELECT id FROM admins WHERE username=$1",
-      [username]
+      "SELECT id FROM users WHERE email = $1",
+      [email]
     );
 
     if (existingUser.rows.length > 0) {
-      return res.status(400).json({
+      return res.status(409).json({
         success: false,
-        message: "Username already exists",
+        message: "User already exists",
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    const result = await db.query(
-      `INSERT INTO admins (username, password, role)
-       VALUES ($1, $2, COALESCE($3, 'admin'))
-       RETURNING id, username, role`,
-      [username, hashedPassword, role]
+    // Insert user
+    const newUser = await db.query(
+      `INSERT INTO users (email, password_hash, role)
+       VALUES ($1, $2, $3)
+       RETURNING id, email, role`,
+      [email, hashedPassword, role]
     );
 
     res.status(201).json({
       success: true,
-      admin: result.rows[0],
+      user: newUser.rows[0],
     });
+
   } catch (error) {
-    console.error("REGISTER_ERROR:", error);
+    console.error("Register Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
@@ -56,54 +60,63 @@ exports.register = async (req, res) => {
 ===================================================== */
 exports.login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Username and password are required",
+        message: "Email and password are required",
       });
     }
 
+    // Find user
     const result = await db.query(
-      "SELECT id, username, password, role FROM admins WHERE username=$1",
-      [username]
+      "SELECT * FROM users WHERE email = $1",
+      [email]
     );
 
     if (result.rows.length === 0) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid email or password",
       });
     }
 
-    const admin = result.rows[0];
+    const user = result.rows[0];
 
-    const isMatch = await bcrypt.compare(password, admin.password);
+    // Compare password
+    const isMatch = await bcrypt.compare(password, user.password_hash);
 
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "Invalid credentials",
+        message: "Invalid email or password",
       });
     }
 
+    // Generate JWT
     const token = jwt.sign(
       {
-        id: admin.id,
-        username: admin.username,
-        role: admin.role,
+        id: user.id,
+        email: user.email,
+        role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: "7d" }
     );
 
     res.json({
       success: true,
       token,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
     });
+
   } catch (error) {
-    console.error("LOGIN_ERROR:", error);
+    console.error("Login Error:", error);
     res.status(500).json({
       success: false,
       message: "Server error",
